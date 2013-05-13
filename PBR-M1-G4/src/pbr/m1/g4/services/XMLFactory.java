@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
  * 
  * Use:
  * Input from XML string XML
- * XMLFactory.init(xml_filename, xml_input);
+ * XMLFactory.init(xml_filename, [string_xml_input, string_xml_input]);
  * 
  * @authors Munteanu Catalin, Popa Alexandru
  * 
@@ -47,6 +47,10 @@ public class XMLFactory {
         return builder.parse(is);
     }
     
+    /**
+     * Method used to append sentences to root element and words to sentences nodes
+     * 
+     */
     public static Element parse_input_xml(Document output_xml_obj, Element output_root_el, Document input_xml_obj) {
         int sentence_index,
             word_index;
