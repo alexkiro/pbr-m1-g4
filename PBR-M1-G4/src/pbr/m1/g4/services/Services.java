@@ -19,6 +19,11 @@ public class Services {
     static final String ChunkText = "chunkText";
     static final String ChunkTaggedText = "chunkTaggedText";
     
+    /**
+     * Calls ChunkText web service from http://nlptools.info.uaic.ro/.
+     * @param inputText the text to be chunked
+     * @return a string containg the XML response of the service.
+     */
     public static String chunkText(String inputText){
         try {
             return new SOAPClient(URL)
@@ -30,6 +35,11 @@ public class Services {
         return null;
     }
     
+    /**
+     * Calls ChunkTaggedText web service from http://nlptools.info.uaic.ro/.
+     * @param taggedXML inputText the text to be chunked
+     * @return a string containg the XML response of the service
+     */
     public static String chunkTaggedText(String taggedXML){
         try {
             return new SOAPClient(URL)
