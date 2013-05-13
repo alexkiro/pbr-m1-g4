@@ -6,9 +6,13 @@ package pbr.m1.g4.services;
  */
 public class App {
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         
-        // Test parse and generate xml
-        XMLFactory.init("input.xml");
+        // Test parse and generate xml from XML file
+        // XMLFactory.init("input.xml", "output_file", true);
+        
+        // Test parse and generate xml using SOAP services (from XML string)
+        String soap_response = Services.chunkText("Maria are mere. Ionut merge la mare.");
+        XMLFactory.init(soap_response, "output_filename", false);
     }    
 }
