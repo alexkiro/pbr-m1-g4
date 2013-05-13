@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package pbr.m1.g4;
 
 import java.awt.Color;
@@ -11,6 +7,7 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -283,7 +280,6 @@ public class Interface extends javax.swing.JFrame {
     }//GEN-LAST:event_ItemCloseActionPerformed
 
     private void LoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoadButtonActionPerformed
-
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
@@ -292,9 +288,10 @@ public class Interface extends javax.swing.JFrame {
                 FileLocation.setText(file.getAbsolutePath());
                 TextAreaFromFile.read(new FileReader(file.getAbsolutePath()), null);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Problem accessing file" + file.getAbsolutePath());               
+                JOptionPane.showMessageDialog(this, "Problem accessing file" + file.getAbsolutePath(),"Error",
+                                JOptionPane.ERROR_MESSAGE);
             }
-        } else {            
+        } else {
             System.out.println("File access cancelled by user.");
         }
     }//GEN-LAST:event_LoadButtonActionPerformed
@@ -309,12 +306,34 @@ public class Interface extends javax.swing.JFrame {
     }//GEN-LAST:event_ItemNewActionPerformed
 
     private void ItemSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ItemSaveActionPerformed
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Collector.getInstance().getXmls();
-            }
-        }).start();
+        JFileChooser jfc = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("XML", ".xml");
+        jfc.addChoosableFileFilter(filter);
+        jfc.setFileFilter(filter);
+
+        int returnVal = jfc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            final File file = jfc.getSelectedFile();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String name = file.getAbsolutePath() + ".xml";
+                    startProgressBar();
+                    boolean check = Collector.getInstance().saveToFile(name);
+                    stopProgressBar();                    
+                    if (check){
+                        JOptionPane.showMessageDialog(Interface.this, "Succesfully saved to: " + name);
+                    } else {
+                        JOptionPane.showMessageDialog(Interface.this, "Error while saving: " + name, "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }                    
+                }
+            }).start();
+        } else {
+            System.out.println("File access cancelled by user.");
+        }
+
+
     }//GEN-LAST:event_ItemSaveActionPerformed
 
     private void ParseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParseButtonActionPerformed
@@ -337,7 +356,7 @@ public class Interface extends javax.swing.JFrame {
                 startProgressBar();
                 String str = TextAreaFromFile.getText();
                 TextAreaFromFile.setText("");
-                Collector.getInstance().parse(str);               
+                Collector.getInstance().parse(str);
                 stopProgressBar();
             }
         }).start();
@@ -386,6 +405,7 @@ public class Interface extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 Interface interf = new Interface();
                 interf.setVisible(true);
