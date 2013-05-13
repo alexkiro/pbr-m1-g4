@@ -27,12 +27,8 @@ import org.xml.sax.SAXException;
  * using response from http://nlptools.info.uaic.ro services
  * 
  * Use:
- * 
- * #1 Input from XML file
- * XMLFactory.init("input.xml", "output_xml_file_name", true);
- * 
- * #2 Input from XML string/obj XML
- * XMLFactory.init("<input><xml_string>value</xml_string></input>", "output_xml_file_name", false);
+ * Input from XML string XML
+ * XMLFactory.init(xml_filename, xml_input);
  * 
  * @authors Munteanu Catalin, Popa Alexandru
  * 
@@ -50,83 +46,78 @@ public class XMLFactory {
 
         return builder.parse(is);
     }
+    
+    public static Element parse_input_xml(Document output_xml_obj, Element output_root_el, Document input_xml_obj) {
+        int sentence_index,
+            word_index;
+        
+        // Get all sentences in response
+        NodeList sentences_nodes = input_xml_obj.getElementsByTagName("S");
+        
+        // Loop in sentences
+        for(int i = 0; i < sentences_nodes.getLength(); ++i) {
+            sentence_index           = output_root_el.getElementsByTagName("SEG").getLength() + 1;
+            Node sentence_node       = sentences_nodes.item(i);
+            Element sentence_element = (Element) sentence_node;
+            NodeList words_nodes     = sentence_element.getElementsByTagName("W");
+
+            // Create sentence nodes in output XML
+            Element SEG = output_xml_obj.createElement("SEG");
+            SEG.setAttribute("ID", Integer.toString(sentence_index));
+            output_root_el.appendChild(SEG);
+
+            // Loop in words for current sentence
+            for(int y=0; y<words_nodes.getLength(); ++y) {
+                word_index              = sentence_element.getElementsByTagName("SEG").getLength() + 1;
+                Node word_node          = words_nodes.item(y);
+                Element word_element    = (Element) word_node;
+
+                // System.out.println("Current Word: " + word_node.getNodeName());
+                // System.out.println(word_node.getNodeType());
+                // System.out.println("Value:  " + word_element.getTextContent());
+                // System.out.println("Id:  " + word_element.getAttribute("id"));
+
+                // Create sentence nodes in output XML
+                Element W = output_xml_obj.createElement("W");
+
+                W.setTextContent(word_element.getTextContent());
+                W.setAttribute("ID",    Integer.toString(sentence_index) + '.' + Integer.toString(word_index));
+                W.setAttribute("LEMMA", word_element.getAttribute("LEMMA"));
+                W.setAttribute("POS",   word_element.getAttribute("POS"));
+
+                SEG.appendChild(W);
+            }
+        }
+        
+        return output_root_el;
+    }
 
     /**
      * Method used to parse input XML from string/file and create output XML
      * 
      */    
-    public static void init(String input_xml, String xml_filename, boolean is_file) throws Exception {
+    public static void init(String xml_filename, String[] xml_input) throws Exception {
 
         try {
             // Init XML Builder/Parse
             DocumentBuilderFactory dbFactory    = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder          = dbFactory.newDocumentBuilder();
             Document input_xml_obj;
-
-            // Read input XML obj
-            if(is_file) {
-                // Read input XML file
-                File xml_file = new File(input_xml);                
-                input_xml_obj = docBuilder.parse(xml_file);
-
-            } else {
-                // Read input XML from string
-                input_xml_obj = load_XML_from_string(input_xml);
-            }
-
+            
             // Create output XML obj
             // root element
             Document output_xml_obj = docBuilder.newDocument();
             Element output_root_el = output_xml_obj.createElement("ROOT");
             output_xml_obj.appendChild(output_root_el);
-           
-            // optional - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-            input_xml_obj.getDocumentElement().normalize();
-
-            // System.out.println("Root: " + input_xml_obj.getDocumentElement().getNodeName());
             
-            // Get all sentences in response
-            NodeList sentences_nodes = input_xml_obj.getElementsByTagName("S");
-            
-            // Loop in root children nodes (sentences)  
-            for(int i = 0; i < sentences_nodes.getLength(); ++i) {
-
-                Node sentence_node = sentences_nodes.item(i);
-
-                // System.out.println("Current Sentence: " + sentence_node.getNodeName());
-                // System.out.println(sentence_node.getNodeType());
-                
-                // Get all words in sentence
-                Element sentence_element = (Element) sentence_node;
-                NodeList words_nodes     = sentence_element.getElementsByTagName("W");
-                
-                // Create sentence nodes in output XML
-                Element SEG = output_xml_obj.createElement("SEG");
-                SEG.setAttribute("ID", sentence_element.getAttribute("id"));
-                output_root_el.appendChild(SEG);
-                
-                // Loop in words for current sentence
-                for(int y=0; y<words_nodes.getLength(); ++y) {
-                    Node word_node          = words_nodes.item(y);
-                    Element word_element    = (Element) word_node;
-
-                    // System.out.println("Current Word: " + word_node.getNodeName());
-                    // System.out.println(word_node.getNodeType());
-                    // System.out.println("Value:  " + word_element.getTextContent());
-                    // System.out.println("Id:  " + word_element.getAttribute("id"));
-                    
-                    // Create sentence nodes in output XML
-                    Element W = output_xml_obj.createElement("W");
-                    
-                    W.setTextContent(word_element.getTextContent());
-                    W.setAttribute("ID",    word_element.getAttribute("id"));
-                    W.setAttribute("LEMMA", word_element.getAttribute("LEMMA"));
-                    W.setAttribute("POS",   word_element.getAttribute("POS"));
-                    
-                    SEG.appendChild(W);
-                }
+            for(int i=0; i<xml_input.length; ++i) {
+                // Read input XML from string
+                input_xml_obj = load_XML_from_string(xml_input[i]);
+                // optional - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+                input_xml_obj.getDocumentElement().normalize();
+                output_root_el = parse_input_xml(output_xml_obj, output_root_el, input_xml_obj);
             }
-            
+          
             // Write output_xml to XML FILE
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
            

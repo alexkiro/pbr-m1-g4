@@ -8,11 +8,11 @@ public class App {
     
     public static void main(String[] args) throws Exception {
         
-        // Test parse and generate xml from XML file
-        // XMLFactory.init("input.xml", "output_file", true);
-        
         // Test parse and generate xml using SOAP services (from XML string)
-        String soap_response = Services.chunkText("Maria are mere. Ionut merge la mare.");
-        XMLFactory.init(soap_response, "output_filename", false);
+        String[] response = new String[2];
+        response[0] = Services.chunkText("Maria are mere. Ionut merge la mare.");
+        response[1] = Services.chunkText("Andrei citeste o carte. Dan se plimba in parc. Maria nu mai are mere.");
+
+        XMLFactory.init("output_filename", response);
     }    
 }
