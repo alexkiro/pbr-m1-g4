@@ -2,6 +2,7 @@ package pbr.m1.g4.services;
  
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
  
 /**
@@ -27,34 +29,60 @@ import org.xml.sax.SAXException;
  * Use:
  * 
  * #1 Input from XML file
- * XMLFactory.init("input.xml");
+ * XMLFactory.init("input.xml", "output_xml_file_name", true);
  * 
  * #2 Input from XML string/obj XML
- * TODO if required :) * 
+ * XMLFactory.init("<input><xml_string>value</xml_string></input>", "output_xml_file_name", false);
  * 
  * @author Munteanu Catalin, Popa Alexandru
  * 
  */
 public class XMLFactory {
+        
+    /**
+     * Method used to create XML obj from input string
+     * 
+     */
+    public static Document load_XML_from_string(String xml) throws Exception {
+        DocumentBuilderFactory factory  = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder         = factory.newDocumentBuilder();
+        InputSource is                  = new InputSource(new StringReader(xml));
 
-    public static void init(String file) {
- 
+        return builder.parse(is);
+    }
+
+    /**
+     * Method used to parse input XML from string/file and create output XML
+     * 
+     */    
+    public static void init(String input_xml, String xml_filename, boolean is_file) throws Exception {
+
         try {
-            // Read input XML file
-            File xml_file = new File(file);
-            
             // Init XML Builder/Parse
             DocumentBuilderFactory dbFactory    = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder          = dbFactory.newDocumentBuilder();
-        
+            Document input_xml_obj;
+
+            // Read input XML obj
+            if(is_file) {
+                // Read input XML file
+                File xml_file = new File(input_xml);                
+                input_xml_obj = docBuilder.parse(xml_file);
+
+            } else {
+                // Read input XML from string
+                input_xml_obj = load_XML_from_string(input_xml);
+            }
+            
+            System.out.println("WTF");
+
             // Create output XML obj
             // root element
             Document output_xml_obj = docBuilder.newDocument();
             Element output_root_el = output_xml_obj.createElement("ROOT");
             output_xml_obj.appendChild(output_root_el);
             
-            // Read input XML obj
-            Document input_xml_obj = docBuilder.parse(xml_file);
+            
             
             // optional - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             input_xml_obj.getDocumentElement().normalize();
@@ -113,7 +141,7 @@ public class XMLFactory {
             DOMSource source                        = new DOMSource(output_xml_obj);
             
             // Save result to XML file
-            StreamResult result = new StreamResult(new File("INPUTXML/output.xml"));
+            StreamResult result = new StreamResult(new File("INPUTXML/" + xml_filename + ".xml"));
             
             // Show result in console
             // StreamResult result = new StreamResult(System.out);
@@ -122,6 +150,7 @@ public class XMLFactory {
             System.out.println("Output XML successfully saved!");
             
         } catch (ParserConfigurationException | DOMException | SAXException | IOException | TransformerFactoryConfigurationError | IllegalArgumentException | TransformerException e) {
+            
         }
     }
 }
