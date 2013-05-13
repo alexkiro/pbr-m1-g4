@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
  * #2 Input from XML string/obj XML
  * XMLFactory.init("<input><xml_string>value</xml_string></input>", "output_xml_file_name", false);
  * 
- * @author Munteanu Catalin, Popa Alexandru
+ * @authors Munteanu Catalin, Popa Alexandru
  * 
  */
 public class XMLFactory {
@@ -73,17 +73,13 @@ public class XMLFactory {
                 // Read input XML from string
                 input_xml_obj = load_XML_from_string(input_xml);
             }
-            
-            System.out.println("WTF");
 
             // Create output XML obj
             // root element
             Document output_xml_obj = docBuilder.newDocument();
             Element output_root_el = output_xml_obj.createElement("ROOT");
             output_xml_obj.appendChild(output_root_el);
-            
-            
-            
+           
             // optional - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             input_xml_obj.getDocumentElement().normalize();
 
@@ -132,13 +128,13 @@ public class XMLFactory {
             }
             
             // Write output_xml to XML FILE
-            TransformerFactory transformerFactory   = TransformerFactory.newInstance();
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
            
             transformerFactory.setAttribute("indent-number", 4);
             
-            Transformer transformer                 = transformerFactory.newTransformer();
+            Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            DOMSource source                        = new DOMSource(output_xml_obj);
+            DOMSource source = new DOMSource(output_xml_obj);
             
             // Save result to XML file
             StreamResult result = new StreamResult(new File("INPUTXML/" + xml_filename + ".xml"));
@@ -150,7 +146,6 @@ public class XMLFactory {
             System.out.println("Output XML successfully saved!");
             
         } catch (ParserConfigurationException | DOMException | SAXException | IOException | TransformerFactoryConfigurationError | IllegalArgumentException | TransformerException e) {
-            
         }
     }
 }
