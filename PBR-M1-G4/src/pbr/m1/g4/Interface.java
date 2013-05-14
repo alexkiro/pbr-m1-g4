@@ -1,9 +1,14 @@
 package pbr.m1.g4;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -51,9 +56,6 @@ public class Interface extends javax.swing.JFrame {
         ItemNew = new javax.swing.JMenuItem();
         ItemSave = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        ItemNewXML = new javax.swing.JMenuItem();
-        ItemSaveXML = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         ItemClose = new javax.swing.JMenuItem();
         MenuAbout = new javax.swing.JMenu();
         ItemHelp = new javax.swing.JMenuItem();
@@ -196,17 +198,6 @@ public class Interface extends javax.swing.JFrame {
         MenuFile.add(ItemSave);
         MenuFile.add(jSeparator1);
 
-        ItemNewXML.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
-        ItemNewXML.setText("Create New XML");
-        ItemNewXML.setEnabled(false);
-        MenuFile.add(ItemNewXML);
-
-        ItemSaveXML.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        ItemSaveXML.setText("Save As XML");
-        ItemSaveXML.setEnabled(false);
-        MenuFile.add(ItemSaveXML);
-        MenuFile.add(jSeparator3);
-
         ItemClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
         ItemClose.setText("Close");
         ItemClose.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -230,6 +221,11 @@ public class Interface extends javax.swing.JFrame {
         ItemHelp.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 ItemHelpMouseClicked(evt);
+            }
+        });
+        ItemHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ItemHelpActionPerformed(evt);
             }
         });
         MenuAbout.add(ItemHelp);
@@ -288,8 +284,8 @@ public class Interface extends javax.swing.JFrame {
                 FileLocation.setText(file.getAbsolutePath());
                 TextAreaFromFile.read(new FileReader(file.getAbsolutePath()), null);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Problem accessing file" + file.getAbsolutePath(),"Error",
-                                JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Problem accessing file" + file.getAbsolutePath(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } else {
             System.out.println("File access cancelled by user.");
@@ -320,13 +316,13 @@ public class Interface extends javax.swing.JFrame {
                     String name = file.getAbsolutePath() + ".xml";
                     startProgressBar();
                     boolean check = Collector.getInstance().saveToFile(name);
-                    stopProgressBar();                    
-                    if (check){
+                    stopProgressBar();
+                    if (check) {
                         JOptionPane.showMessageDialog(Interface.this, "Succesfully saved to: " + name);
                     } else {
                         JOptionPane.showMessageDialog(Interface.this, "Error while saving: " + name, "Error",
                                 JOptionPane.ERROR_MESSAGE);
-                    }                    
+                    }
                 }
             }).start();
         } else {
@@ -361,6 +357,21 @@ public class Interface extends javax.swing.JFrame {
             }
         }).start();
     }//GEN-LAST:event_ParseFromFileButtonActionPerformed
+
+    public static void openWebpage(URI uri) {
+        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(uri);
+            } catch (Exception ex) {
+                Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void ItemHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ItemHelpActionPerformed
+        openWebpage(new File("help/index.html").toURI());
+    }//GEN-LAST:event_ItemHelpActionPerformed
 
     private void startProgressBar() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -425,9 +436,7 @@ public class Interface extends javax.swing.JFrame {
     private javax.swing.JMenuItem ItemClose;
     private javax.swing.JMenuItem ItemHelp;
     private javax.swing.JMenuItem ItemNew;
-    private javax.swing.JMenuItem ItemNewXML;
     private javax.swing.JMenuItem ItemSave;
-    private javax.swing.JMenuItem ItemSaveXML;
     private javax.swing.JButton LoadButton;
     private javax.swing.JMenuBar MainMenu;
     private javax.swing.JMenu MenuAbout;
@@ -444,6 +453,5 @@ public class Interface extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator3;
     // End of variables declaration//GEN-END:variables
 }
