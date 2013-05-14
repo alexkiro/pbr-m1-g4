@@ -74,7 +74,7 @@ public class XMLFactory {
 
             // Loop in words for current sentence
             for(int y=0; y<words_nodes.getLength(); ++y) {
-                word_index              = sentence_element.getElementsByTagName("SEG").getLength() + 1;
+                word_index              = SEG.getElementsByTagName("W").getLength() + 1;
                 Node word_node          = words_nodes.item(y);
                 Element word_element    = (Element) word_node;
 
