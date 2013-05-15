@@ -6,13 +6,14 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import pbr.m1.g4.services.Services;
+import pbr.m1.g4.services.XMLFactory;
 
 /**
  *
@@ -22,6 +23,8 @@ public class Interface extends javax.swing.JFrame {
 
     final JFileChooser fc = new JFileChooser();
 
+    final String DIRNAME = "INPUTXML";
+    
     /**
      * Creates new form Interface
      */
@@ -53,9 +56,6 @@ public class Interface extends javax.swing.JFrame {
         ParseFromFileButton = new javax.swing.JButton();
         MainMenu = new javax.swing.JMenuBar();
         MenuFile = new javax.swing.JMenu();
-        ItemNew = new javax.swing.JMenuItem();
-        ItemSave = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
         ItemClose = new javax.swing.JMenuItem();
         MenuAbout = new javax.swing.JMenu();
         ItemHelp = new javax.swing.JMenuItem();
@@ -169,35 +169,6 @@ public class Interface extends javax.swing.JFrame {
             }
         });
 
-        ItemNew.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-        ItemNew.setText("New");
-        ItemNew.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                ItemNewMouseClicked(evt);
-            }
-        });
-        ItemNew.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ItemNewActionPerformed(evt);
-            }
-        });
-        MenuFile.add(ItemNew);
-
-        ItemSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        ItemSave.setText("Save");
-        ItemSave.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                ItemSaveMouseClicked(evt);
-            }
-        });
-        ItemSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ItemSaveActionPerformed(evt);
-            }
-        });
-        MenuFile.add(ItemSave);
-        MenuFile.add(jSeparator1);
-
         ItemClose.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
         ItemClose.setText("Close");
         ItemClose.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -257,13 +228,6 @@ public class Interface extends javax.swing.JFrame {
     private void MenuFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MenuFileMouseClicked
     }//GEN-LAST:event_MenuFileMouseClicked
 
-    private void ItemNewMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ItemNewMouseClicked
-    }//GEN-LAST:event_ItemNewMouseClicked
-
-    private void ItemSaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ItemSaveMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ItemSaveMouseClicked
-
     private void ItemCloseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ItemCloseMouseClicked
     }//GEN-LAST:event_ItemCloseMouseClicked
 
@@ -291,47 +255,7 @@ public class Interface extends javax.swing.JFrame {
             System.out.println("File access cancelled by user.");
         }
     }//GEN-LAST:event_LoadButtonActionPerformed
-
-    private void ItemNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ItemNewActionPerformed
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Collector.getInstance().clear();
-            }
-        }).start();
-    }//GEN-LAST:event_ItemNewActionPerformed
-
-    private void ItemSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ItemSaveActionPerformed
-        JFileChooser jfc = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("XML", ".xml");
-        jfc.addChoosableFileFilter(filter);
-        jfc.setFileFilter(filter);
-
-        int returnVal = jfc.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            final File file = jfc.getSelectedFile();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String name = file.getAbsolutePath() + ".xml";
-                    startProgressBar();
-                    boolean check = Collector.getInstance().saveToFile(name);
-                    stopProgressBar();
-                    if (check) {
-                        JOptionPane.showMessageDialog(Interface.this, "Succesfully saved to: " + name);
-                    } else {
-                        JOptionPane.showMessageDialog(Interface.this, "Error while saving: " + name, "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }).start();
-        } else {
-            System.out.println("File access cancelled by user.");
-        }
-
-
-    }//GEN-LAST:event_ItemSaveActionPerformed
-
+    
     private void ParseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ParseButtonActionPerformed
         new Thread(new Runnable() {
             @Override
@@ -339,7 +263,7 @@ public class Interface extends javax.swing.JFrame {
                 startProgressBar();
                 String str = TextArea.getText();
                 TextArea.setText("");
-                Collector.getInstance().parse(str);
+                parseText(str);
                 stopProgressBar();
             }
         }).start();
@@ -352,13 +276,40 @@ public class Interface extends javax.swing.JFrame {
                 startProgressBar();
                 String str = TextAreaFromFile.getText();
                 TextAreaFromFile.setText("");
-                Collector.getInstance().parse(str);
+                parseText(str);
                 stopProgressBar();
             }
         }).start();
     }//GEN-LAST:event_ParseFromFileButtonActionPerformed
 
-    public static void openWebpage(URI uri) {
+    public void parseText(String input){
+        if (input.isEmpty()){
+            return;
+        }
+        String xml = Services.chunkText(input);
+        try {
+            File dir = new File(DIRNAME);
+            if (!(dir.getCanonicalFile().exists() && dir.getCanonicalFile().isDirectory())) {
+                dir.mkdir();
+            }
+            String[] result = {Services.chunkText(input)};
+            XMLFactory.init(getUniqueName(), result);                       
+        } catch (IOException ex) {
+            Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Returns unique file name using the UNIX millisecond timestamp
+     * @return 
+     */
+    public synchronized String getUniqueName(){
+        return DIRNAME + "/" + System.currentTimeMillis() + ".xml";
+    }
+    
+    public void openWebpage(URI uri) {
         Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
             try {
@@ -435,8 +386,6 @@ public class Interface extends javax.swing.JFrame {
     private javax.swing.JTextField FileLocation;
     private javax.swing.JMenuItem ItemClose;
     private javax.swing.JMenuItem ItemHelp;
-    private javax.swing.JMenuItem ItemNew;
-    private javax.swing.JMenuItem ItemSave;
     private javax.swing.JButton LoadButton;
     private javax.swing.JMenuBar MainMenu;
     private javax.swing.JMenu MenuAbout;
@@ -452,6 +401,5 @@ public class Interface extends javax.swing.JFrame {
     private javax.swing.JPanel TextPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
     // End of variables declaration//GEN-END:variables
 }
