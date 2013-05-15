@@ -55,7 +55,7 @@ public class XMLFactory {
      */
     public static Element parse_input_xml(Document output_xml_obj, Element output_root_el, Document input_xml_obj) {
         int sentence_index,
-            word_index;
+            child_index;
         
         // Get all sentences in response
         NodeList sentences_nodes = input_xml_obj.getElementsByTagName("S");
@@ -65,7 +65,7 @@ public class XMLFactory {
             sentence_index           = output_root_el.getElementsByTagName("SEG").getLength() + 1;
             Node sentence_node       = sentences_nodes.item(i);
             Element sentence_element = (Element) sentence_node;
-            NodeList words_nodes     = sentence_element.getElementsByTagName("W");
+            NodeList child_nodes     = sentence_element.getChildNodes();
 
             // Create sentence nodes in output XML
             Element SEG = output_xml_obj.createElement("SEG");
@@ -73,25 +73,71 @@ public class XMLFactory {
             output_root_el.appendChild(SEG);
 
             // Loop in words for current sentence
-            for(int y=0; y<words_nodes.getLength(); ++y) {
-                word_index              = SEG.getElementsByTagName("W").getLength() + 1;
-                Node word_node          = words_nodes.item(y);
-                Element word_element    = (Element) word_node;
+            for(int y=0; y<child_nodes.getLength(); ++y) {
+                child_index =   SEG.getElementsByTagName("W").getLength() + 
+                                SEG.getElementsByTagName("NP").getLength() + 
+                                1;
 
-                // System.out.println("Current Word: " + word_node.getNodeName());
-                // System.out.println(word_node.getNodeType());
-                // System.out.println("Value:  " + word_element.getTextContent());
-                // System.out.println("Id:  " + word_element.getAttribute("id"));
+                Node child_node = child_nodes.item(y);
+                
+                // Sentence child is NP element (use child W)
+                if(child_node.getNodeName().equals("NP")) {
+                    Element np_node = (Element) child_node;
+                    NodeList word_nodes = np_node.getElementsByTagName("W");
+                   
+                    
+                    Element NP = output_xml_obj.createElement("NP");
+                    NP.setAttribute("ID", Integer.toString(sentence_index) + '.' + Integer.toString(child_index));
+                    
+                    // Loop in W from NP
+                    for(int t=0; t<word_nodes.getLength(); ++t) {
+                        Element w_node = (Element) word_nodes.item(t);
+                        child_index++;
+                         
+                        Element W = output_xml_obj.createElement("W");
+    
+                        W.setTextContent(w_node.getTextContent());
+                        W.setAttribute("ID",    Integer.toString(sentence_index) + '.' + Integer.toString(child_index));
+                        W.setAttribute("LEMMA", w_node.getAttribute("LEMMA"));
+                        W.setAttribute("POS",   w_node.getAttribute("POS"));
 
-                // Create sentence nodes in output XML
-                Element W = output_xml_obj.createElement("W");
+                        NP.appendChild(W);
+                    }
 
-                W.setTextContent(word_element.getTextContent());
-                W.setAttribute("ID",    Integer.toString(sentence_index) + '.' + Integer.toString(word_index));
-                W.setAttribute("LEMMA", word_element.getAttribute("LEMMA"));
-                W.setAttribute("POS",   word_element.getAttribute("POS"));
+                    SEG.appendChild(NP);
+                }
+                
+                // Sentence child is W element (use it)
+                if(child_node.getNodeName().equals("W")) {
+                    Element word_node = (Element) child_node;
+                    Element W = output_xml_obj.createElement("W");
 
-                SEG.appendChild(W);
+                    W.setTextContent(word_node.getTextContent());
+                    W.setAttribute("ID",    Integer.toString(sentence_index) + '.' + Integer.toString(child_index));
+                    W.setAttribute("LEMMA", word_node.getAttribute("LEMMA"));
+                    W.setAttribute("POS",   word_node.getAttribute("POS"));
+
+                    SEG.appendChild(W);
+                }
+                
+//               
+//                Node word_node          = words_nodes.item(y);
+//                Element word_element    = (Element) word_node;
+//
+//                // System.out.println("Current Word: " + word_node.getNodeName());
+//                // System.out.println(word_node.getNodeType());
+//                // System.out.println("Value:  " + word_element.getTextContent());
+//                // System.out.println("Id:  " + word_element.getAttribute("id"));
+//
+//                // Create sentence nodes in output XML
+//                Element W = output_xml_obj.createElement("W");
+//
+//                W.setTextContent(word_element.getTextContent());
+//                W.setAttribute("ID",    Integer.toString(sentence_index) + '.' + Integer.toString(word_index));
+//                W.setAttribute("LEMMA", word_element.getAttribute("LEMMA"));
+//                W.setAttribute("POS",   word_element.getAttribute("POS"));
+//
+//                SEG.appendChild(W);
             }
         }
         
